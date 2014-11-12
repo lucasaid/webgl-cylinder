@@ -27,7 +27,10 @@
     <script src="http://threejs.org/build/three.min.js"></script>
 
     <script src="http://threejs.org/examples/js/controls/OrbitControls.js"></script>
-	<script src="http://threejs.org/examples/js/loaders/OBJLoader.js"></script>
+	<script src="http://threejs.org/examples/js/loaders/DDSLoader.js"></script>
+	<script src="http://threejs.org/examples/js/loaders/MTLLoader.js"></script>
+	<script src="http://threejs.org/examples/js/loaders/OBJMTLLoader.js"></script>
+
     <script src="http://threejs.org/examples/js/Detector.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
@@ -53,17 +56,17 @@
         container = document.getElementById( 'container' );
 
 		camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 2000 );
-		camera.position.z = 100;
+		camera.position.z = 700;
 
 		// scene
 
 		scene = new THREE.Scene();
 
-		var ambient = new THREE.AmbientLight( 0x101030 );
+		var ambient = new THREE.AmbientLight( 0xffeedd );
 		scene.add( ambient );
 
 		var directionalLight = new THREE.DirectionalLight( 0xffeedd );
-		directionalLight.position.set( 0, 0, 1 );
+		directionalLight.position.set( 1, 1, 1 );
 		scene.add( directionalLight );
 
 		// texture
@@ -88,34 +91,16 @@
 		};
 
 
-		var loader = new THREE.ImageLoader( manager );
-		loader.load( 'images/UV_Grid_Sm.jpg', function ( image ) {
+		THREE.Loader.Handlers.add( /\.dds$/i, new THREE.DDSLoader() );
 
-			texture.image = image;
-			texture.needsUpdate = true;
+		var loader = new THREE.OBJMTLLoader();
+		loader.load( 'models/sonyericsson-w9600-midres.obj', 'models/sonyericsson-w9600-midres.mtl', function ( object ) {
 
-		} );
-
-		// model
-
-		var loader = new THREE.OBJLoader( manager );
-		loader.load( 'models/male02.obj', function ( object ) {
-
-			object.traverse( function ( child ) {
-
-				if ( child instanceof THREE.Mesh ) {
-
-					child.material.map = texture;
-
-				}
-
-			} );
-
-			object.position.y = - 80;
+			object.position.y = -80;
 			person = object;
 			scene.add( object );
 
-		}, onProgress, onError );
+		});
 
 		//
 
@@ -165,9 +150,10 @@
 		}
 
 		function render() {
-
-			camera.position.x += ( mouseX - camera.position.x ) * .05;
-			camera.position.y += ( - mouseY - camera.position.y ) * .05;
+			if(person){
+				person.rotation.x += ( mouseX - person.rotation.x ) / 2000;
+				person.rotation.y += ( - mouseY - person.rotation.y ) / 2000;
+			}
 
 			camera.lookAt( scene.position );
 
