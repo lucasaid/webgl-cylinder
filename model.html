@@ -48,6 +48,7 @@
 
 	var windowHalfX = window.innerWidth / 2;
 	var windowHalfY = window.innerHeight / 2;
+	var rotating = true;
 
       init();
       animate();
@@ -150,7 +151,7 @@
 		}
 
 		function render() {
-			if(person){
+			if(person && rotating){
 				person.rotation.x += ( mouseX - person.rotation.x ) / 2000;
 				person.rotation.y += ( - mouseY - person.rotation.y ) / 2000;
 			}
@@ -174,7 +175,13 @@
       }
 
       $(document).ready(function(){
-
+      	$('#container').click(function(){
+      		if(rotating){
+      			rotating = false;
+      		} else {
+      			rotating = true;
+      		}
+      	});
         $( "#width" ).slider({
           orientation: "horizontal",
           range: "min",
