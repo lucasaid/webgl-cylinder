@@ -29,7 +29,7 @@
     <script src="http://threejs.org/examples/js/controls/OrbitControls.js"></script>
 	<script src="http://threejs.org/examples/js/loaders/DDSLoader.js"></script>
 	<script src="http://threejs.org/examples/js/loaders/MTLLoader.js"></script>
-	<script src="http://threejs.org/examples/js/loaders/OBJMTLLoader.js"></script>
+	<script src="http://threejs.org/examples/js/loaders/OBJLoader.js"></script>
 
     <script src="http://threejs.org/examples/js/Detector.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
@@ -57,7 +57,7 @@
         container = document.getElementById( 'container' );
 
 		camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 2000 );
-		camera.position.z = 700;
+		camera.position.z = 500;
 
 		// scene
 
@@ -90,14 +90,49 @@
 
 		var onError = function ( xhr ) {
 		};
+    // Materials
 
+    var imgTexture2 = THREE.ImageUtils.loadTexture( "images/moon_1024.jpg" );
+    imgTexture2.wrapS = imgTexture2.wrapT = THREE.RepeatWrapping;
+    imgTexture2.anisotropy = 16;
+
+    var imgTexture = THREE.ImageUtils.loadTexture( "images/lavatile.jpg" );
+    imgTexture.repeat.set( 4, 2 );
+    imgTexture.wrapS = imgTexture.wrapT = THREE.RepeatWrapping;
+    imgTexture.anisotropy = 16;
+
+    var shininess = 50, specular = 0x333333, bumpScale = 1, shading = THREE.SmoothShading;
+
+    objects = [];
+
+    material = new THREE.MeshPhongMaterial( { map: imgTexture2, bumpMap: imgTexture2, bumpScale: bumpScale, color: 0xffffff, ambient: 0x777777, specular: specular, shininess: shininess, shading: shading } );
+
+    shininess = 15;
+    var material1 = new THREE.MeshPhongMaterial( { map: imgTexture2, color: 0xff0000,bumpMap: imgTexture2, transparent: false } );
+
+      var loader = new THREE.ImageLoader( manager );
+      loader.load( "images/lavatile.jpg", function ( image ) {
+
+        texture.image = image;
+        texture.needsUpdate = true;
+
+      } );
 
 		THREE.Loader.Handlers.add( /\.dds$/i, new THREE.DDSLoader() );
 
-		var loader = new THREE.OBJMTLLoader();
-		loader.load( 'models/sonyericsson-w9600-midres.obj', 'models/sonyericsson-w9600-midres.mtl', function ( object ) {
+		var loader = new THREE.OBJLoader( manager );
+		loader.load( 'models/Tankworks_Round.obj', function ( object ) {
+      object.traverse( function ( child ) {
 
+        if ( child instanceof THREE.Mesh ) {
+
+          child.material = material1;
+
+        }
+
+      } );
 			object.position.y = -80;
+
 			person = object;
 			scene.add( object );
 
