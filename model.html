@@ -27,59 +27,28 @@
     <script src="http://threejs.org/build/three.min.js"></script>
 
     <script src="http://threejs.org/examples/js/controls/OrbitControls.js"></script>
-	<script src="http://threejs.org/examples/js/loaders/DDSLoader.js"></script>
-	<script src="http://threejs.org/examples/js/loaders/MTLLoader.js"></script>
-	<script src="http://threejs.org/examples/js/loaders/OBJLoader.js"></script>
+  <script src="http://threejs.org/examples/js/loaders/DDSLoader.js"></script>
+  <script src="http://threejs.org/examples/js/loaders/MTLLoader.js"></script>
+  <script src="http://threejs.org/examples/js/loaders/OBJLoader.js"></script>
 
     <script src="http://threejs.org/examples/js/Detector.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
 
-    <script type="x-shader/x-vertex" id="vertexShader">
 
-      varying vec3 vWorldPosition;
-
-      void main() {
-
-        vec4 worldPosition = modelMatrix * vec4( position, 1.0 );
-        vWorldPosition = worldPosition.xyz;
-
-        gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
-
-      }
-
-    </script>
-
-    <script type="x-shader/x-fragment" id="fragmentShader">
-
-      uniform vec3 topColor;
-      uniform vec3 bottomColor;
-      uniform float offset;
-      uniform float exponent;
-
-      varying vec3 vWorldPosition;
-
-      void main() {
-
-        float h = normalize( vWorldPosition + offset ).y;
-        gl_FragColor = vec4( mix( bottomColor, topColor, max( pow( max( h, 0.0 ), exponent ), 0.0 ) ), 1.0 );
-
-      }
-
-    </script>
 
     <script>
 
       if ( ! Detector.webgl ) Detector.addGetWebGLMessage();
-	var container;
+  var container;
 
-	var camera, scene, renderer, person;
+  var camera, scene, renderer, person;
 
-	var mouseX = 0, mouseY = 0;
+  var mouseX = 0, mouseY = 0;
 
-	var windowHalfX = window.innerWidth / 2;
-	var windowHalfY = window.innerHeight / 2;
-	var rotating = false;
+  var windowHalfX = window.innerWidth / 2;
+  var windowHalfY = window.innerHeight / 2;
+  var rotating = true;
 
       init();
       animate();
@@ -87,89 +56,48 @@
 
         container = document.getElementById( 'container' );
 
-		camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 2000 );
-		camera.position.z = 30;
-    camera.position.x = 0;
-    camera.position.y = -100;
+    camera = new THREE.PerspectiveCamera( 45, window.innerWidth / window.innerHeight, 1, 2000 );
+    camera.position.z = 500;
 
-        controls = new THREE.OrbitControls( camera );
-		// scene
+    // scene
 
-		scene = new THREE.Scene();
-        scene.fog = new THREE.Fog( 0xffffff, 1000, 10000 );
+    scene = new THREE.Scene();
 
-		var ambient = new THREE.AmbientLight( 0x888888 );
-		scene.add( ambient );
+    var ambient = new THREE.AmbientLight( 0xffeedd );
+    scene.add( ambient );
 
-        var hemiLight = new THREE.HemisphereLight( 0xffffff, 0xffffff, 1.25 );
-        hemiLight.color.setHSL( 0.6, 1, 0.75 );
-        hemiLight.groundColor.setHSL( 0.1, 0.8, 0.7 );
-        hemiLight.position.y = 500;
-        scene.add( hemiLight );
-
-
-		var directionalLight = new THREE.DirectionalLight( 0x888888 );
-		directionalLight.position.set( -3, 1, 0 );
-		scene.add( directionalLight );
-    var directionalLight = new THREE.DirectionalLight( 0x888888 );
-    directionalLight.position.set( 3, 1, 0 );
+    var directionalLight = new THREE.DirectionalLight( 0xffeedd );
+    directionalLight.position.set( 1, 1, 1 );
     scene.add( directionalLight );
 
-        // SKYDOME
+    // texture
 
-        var vertexShader = document.getElementById( 'vertexShader' ).textContent;
-        var fragmentShader = document.getElementById( 'fragmentShader' ).textContent;
-        var uniforms = {
-          topColor:    { type: "c", value: new THREE.Color( 0x0077ff ) },
-          bottomColor: { type: "c", value: new THREE.Color( 0xffffff ) },
-          offset:    { type: "f", value: 400 },
-          exponent:  { type: "f", value: 0.6 }
-        }
-        uniforms.topColor.value.copy( hemiLight.color );
+    var manager = new THREE.LoadingManager();
+    manager.onProgress = function ( item, loaded, total ) {
 
-        scene.fog.color.copy( uniforms.bottomColor.value );
+      console.log( item, loaded, total );
 
-        var skyGeo = new THREE.SphereGeometry( 4000, 32, 15 );
-        var skyMat = new THREE.ShaderMaterial( {
-          uniforms: uniforms,
-          vertexShader: vertexShader,
-          fragmentShader: fragmentShader,
-          side: THREE.BackSide
-        } );
+    };
 
-        var sky = new THREE.Mesh( skyGeo, skyMat );
-        scene.add( sky );
+    var texture = new THREE.Texture();
 
+    var onProgress = function ( xhr ) {
+      if ( xhr.lengthComputable ) {
+        var percentComplete = xhr.loaded / xhr.total * 100;
+        console.log( Math.round(percentComplete, 2) + '% downloaded' );
+      }
+    };
 
-		// texture
-
-		var manager = new THREE.LoadingManager();
-		manager.onProgress = function ( item, loaded, total ) {
-
-			console.log( item, loaded, total );
-
-		};
-
-		var texture = new THREE.Texture();
-
-		var onProgress = function ( xhr ) {
-			if ( xhr.lengthComputable ) {
-				var percentComplete = xhr.loaded / xhr.total * 100;
-				console.log( Math.round(percentComplete, 2) + '% downloaded' );
-			}
-		};
-
-		var onError = function ( xhr ) {
-		};
+    var onError = function ( xhr ) {
+    };
     // Materials
 
-    var imgTexture2 = THREE.ImageUtils.loadTexture( "images/dirty-metal-surface.jpg" );
+    var imgTexture2 = THREE.ImageUtils.loadTexture( "images/moon_1024.jpg" );
     imgTexture2.wrapS = imgTexture2.wrapT = THREE.RepeatWrapping;
-    imgTexture2.repeat.set( 0.1, 0.1 );
     imgTexture2.anisotropy = 16;
 
     var imgTexture = THREE.ImageUtils.loadTexture( "images/lavatile.jpg" );
-    imgTexture.repeat.set( 6, 3 );
+    imgTexture.repeat.set( 4, 2 );
     imgTexture.wrapS = imgTexture.wrapT = THREE.RepeatWrapping;
     imgTexture.anisotropy = 16;
 
@@ -178,18 +106,9 @@
     objects = [];
 
     material = new THREE.MeshPhongMaterial( { map: imgTexture2, bumpMap: imgTexture2, bumpScale: bumpScale, color: 0xffffff, ambient: 0x777777, specular: specular, shininess: shininess, shading: shading } );
-    material2 = new THREE.MeshPhongMaterial( { map: imgTexture, bumpMap: imgTexture, bumpScale: bumpScale, color: 0xffffff, ambient: 0x777777, specular: specular, shininess: shininess, shading: shading } );
 
     shininess = 15;
-    var material1 = new THREE.MeshPhongMaterial( {
-        map: imgTexture2, 
-        color: 0x666666,
-        shininess: 100.0,
-        ambient: 0x666666,
-        emissive: 0x666666,
-        specular: 0x666666,
-        shading: THREE.FlatShading
-      } );
+    var material1 = new THREE.MeshPhongMaterial( { map: imgTexture2, color: 0xff0000,bumpMap: imgTexture2, transparent: false } );
 
       var loader = new THREE.ImageLoader( manager );
       loader.load( "images/lavatile.jpg", function ( image ) {
@@ -199,10 +118,10 @@
 
       } );
 
-		THREE.Loader.Handlers.add( /\.dds$/i, new THREE.DDSLoader() );
+    THREE.Loader.Handlers.add( /\.dds$/i, new THREE.DDSLoader() );
 
-		var loader = new THREE.OBJLoader( manager );
-		loader.load( 'models/Tankworks_Round.obj', function ( object ) {
+    var loader = new THREE.OBJLoader( manager );
+    loader.load( 'models/Tankworks_Round.obj', function ( object ) {
       object.traverse( function ( child ) {
 
         if ( child instanceof THREE.Mesh ) {
@@ -212,33 +131,24 @@
         }
 
       } );
-			object.rotation.x = 89.6;
-      object.position.y = 0;
-      object.position.z = -115;
+      object.position.y = -80;
 
-			person = object;
-			scene.add( object );
+      person = object;
+      scene.add( object );
 
-		});
-var geometry = new THREE.PlaneGeometry( 5000, 5000, 32 );
-var plane = new THREE.Mesh( geometry, material2 );
-scene.add( plane );
-		//
+    });
 
-    		renderer = new THREE.WebGLRenderer();
-        renderer.setClearColor( scene.fog.color, 1 );
-    		renderer.setSize( window.innerWidth, window.innerHeight );
-        renderer.domElement.style.position = "relative";
+    //
 
-    		container.appendChild( renderer.domElement );
-        renderer.gammaInput = true;
-        renderer.gammaOutput = true;
+    renderer = new THREE.WebGLRenderer();
+    renderer.setSize( window.innerWidth, window.innerHeight );
+    container.appendChild( renderer.domElement );
 
-    		document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+    document.addEventListener( 'mousemove', onDocumentMouseMove, false );
 
-    		//
+    //
 
-    		window.addEventListener( 'resize', onWindowResize, false );
+    window.addEventListener( 'resize', onWindowResize, false );
        // document.addEventListener( 'mousemove', onDocumentMouseMove, false );
 
       }
@@ -246,46 +156,46 @@ scene.add( plane );
       
 
 
-		function onWindowResize() {
+    function onWindowResize() {
 
-			windowHalfX = window.innerWidth / 2;
-			windowHalfY = window.innerHeight / 2;
+      windowHalfX = window.innerWidth / 2;
+      windowHalfY = window.innerHeight / 2;
 
-			camera.aspect = window.innerWidth / window.innerHeight;
-			camera.updateProjectionMatrix();
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
 
-			renderer.setSize( window.innerWidth, window.innerHeight );
+      renderer.setSize( window.innerWidth, window.innerHeight );
 
-		}
+    }
 
-		function onDocumentMouseMove( event ) {
+    function onDocumentMouseMove( event ) {
 
-			mouseX = ( event.clientX - windowHalfX ) / 2;
-			mouseY = ( event.clientY - windowHalfY ) / 2;
+      mouseX = ( event.clientX - windowHalfX ) / 2;
+      mouseY = ( event.clientY - windowHalfY ) / 2;
 
-		}
+    }
 
 
       //
 
-		function animate() {
+    function animate() {
 
-			requestAnimationFrame( animate );
-			render();
+      requestAnimationFrame( animate );
+      render();
 
-		}
+    }
 
-		function render() {
-			if(person && rotating){
-				person.rotation.x += ( mouseX - person.rotation.x ) / 2000;
-				person.rotation.y += ( - mouseY - person.rotation.y ) / 2000;
-			}
+    function render() {
+      if(person && rotating){
+        person.rotation.x += ( mouseX - person.rotation.x ) / 2000;
+        person.rotation.y += ( - mouseY - person.rotation.y ) / 2000;
+      }
 
-			camera.lookAt( scene.position );
+      camera.lookAt( scene.position );
 
-			renderer.render( scene, camera );
+      renderer.render( scene, camera );
 
-		}
+    }
 
       function renderWidth() {
 
@@ -300,7 +210,13 @@ scene.add( plane );
       }
 
       $(document).ready(function(){
-
+        $('#container').click(function(){
+          if(rotating){
+            rotating = false;
+          } else {
+            rotating = true;
+          }
+        });
         $( "#width" ).slider({
           orientation: "horizontal",
           range: "min",
