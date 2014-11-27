@@ -1,13 +1,12 @@
-# FILE:Slimline_v2.obj
-newmtl STAINLESS_STEEL
-Ka 0.798197 0.790123 0.806257
-Kd 0.285671 0.282781 0.288555
-Ks 0.921878 0.921878 0.921878
-illum 2
+# File produced by Open Asset Import Library (http://www.assimp.sf.net)
+# (assimp v3.1.187496374)
+
+newmtl Stainless Steel
+Kd 0.282353 0.282353 0.286275
+Ka 1.24725 1.2296 1.30411
+Ks 0.921569 0.921569 0.921569
+Ke 0 0 0
+d 1
 Ns 18
-newmtl GDLM2_SHADOW_MATERIAL
-Ka 0.228885 0.228885 0.228885
-Kd 0.228885 0.228885 0.228885
-Ks 0 0 0
 illum 2
-Ns 0
+
